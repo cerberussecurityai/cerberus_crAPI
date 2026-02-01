@@ -131,6 +131,11 @@ services:
       - TLS_CERTIFICATE=certs/server.crt
       - TLS_KEY=certs/server.key
       - FILES_LIMIT=1000
+      # Cerberus analytics (optional - leave empty to disable)
+      - CERBERUS_TOKEN=${CERBERUS_TOKEN:-}
+      - CERBERUS_CLIENT_ID=${CERBERUS_CLIENT_ID:-}
+      - CERBERUS_WS_URL=${CERBERUS_WS_URL:-}
+      - CERBERUS_BACKEND_URL=${CERBERUS_BACKEND_URL:-}
     depends_on:
       postgresdb:
         condition: service_healthy

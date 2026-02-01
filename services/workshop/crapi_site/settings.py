@@ -99,6 +99,18 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
+# Cerberus middleware - only enabled if CERBERUS_WS_URL is configured
+if os.environ.get("CERBERUS_WS_URL"):
+    MIDDLEWARE.insert(1, "cerberus_django.CerberusMiddleware")
+
+# Cerberus analytics configuration (all values from environment variables)
+CERBERUS_CONFIG = {
+    "token": os.environ.get("CERBERUS_TOKEN", ""),
+    "client_id": os.environ.get("CERBERUS_CLIENT_ID", ""),
+    "ws_url": os.environ.get("CERBERUS_WS_URL", ""),
+    "backend_url": os.environ.get("CERBERUS_BACKEND_URL", ""),
+}
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = "crapi_site.urls"
