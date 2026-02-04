@@ -7,3 +7,4 @@ services/chatbot/db
 services/certs/
 docker-compose.local.yml
 .env.local
+deploy/docker/.env
