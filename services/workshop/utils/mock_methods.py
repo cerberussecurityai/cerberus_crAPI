@@ -115,7 +115,7 @@ def mock_jwt_auth_required(func):
                 user = User.objects.get(email=token)
                 # Add user object to the view function if authorized
                 kwargs["user"] = user
-                request.cerberus_user_id = user.email
+                request._request.cerberus_user_id = user.email
                 return func(*args, **kwargs)
 
             return Response(
