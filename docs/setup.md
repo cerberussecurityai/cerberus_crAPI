@@ -168,25 +168,42 @@ You can change the smtp configuration if required however all emails with domain
     helm install --namespace crapi crapi . --values values.yaml
     ```
 
-3. If using minikube, create a tunnel to initialize the LoadBalancers
+3. Access crAPI
+
+    The `crapi-web` and Mailhog Services default to `ClusterIP`, so crAPI is
+    reachable only from inside the cluster (it is vulnerable by design — do not
+    put a public endpoint in front of it). Reach the UI via port-forward:
+
+    ```
+    kubectl port-forward -n crapi svc/crapi-web 8888:80     # crAPI:   http://localhost:8888
+    kubectl port-forward -n crapi svc/mailhog-web 8025:8025 # Mailhog: http://localhost:8025
+    ```
+
+4. (Optional) Expose it externally
+
+    Only if you are knowingly exposing a disposable target, opt into a
+    `NodePort`/`LoadBalancer` Service:
+
+    ```
+    helm install --namespace crapi crapi . --values values.yaml \
+      --set web.service.type=NodePort --set mailhog.webService.type=NodePort
+    ```
+
+    For minikube with `type: LoadBalancer`, initialize the LoadBalancers with a
+    tunnel, then crAPI is on `<LOADBALANCER_IP>:8888` and Mailhog on
+    `<LOADBALANCER_IP>:8025`:
+
     ```
     minikube tunnel --alsologtostderr
     ```
 
-4. Access crAPI
-
-    crAPI should be available on the `<LOADBALANCER_IP>:8888`
-    Mailhog on `<LOADBALANCER_IP>:8025`
-
-    Or for minikube run the following command to get the URL
+    Or with `type: NodePort`, get the URLs via:
 
     ```
     crAPI URL:
     $ echo "http://$(minikube ip):30080"
-    ```
-    ```
     Mailhog URL:
-    echo "http://$(minikube ip):30025"
+    $ echo "http://$(minikube ip):30025"
     ```
 
 ## Vagrant

@@ -6,15 +6,20 @@ metadata:
     release: {{ .Release.Name }}
     {{- toYaml .Values.web.service.labels | nindent 4 }}
 spec:
+  {{- $svcType := .Values.web.service.type | default "ClusterIP" }}
   ports:
   - port: {{ .Values.web.port }}
     targetPort: 80
+    {{- if ne $svcType "ClusterIP" }}
     nodePort: {{ .Values.web.service.nodePort }}
+    {{- end }}
     name: nginx
   - port: {{ .Values.web.sslPort }}
     targetPort: 443
+    {{- if ne $svcType "ClusterIP" }}
     nodePort: {{ .Values.web.service.sslNodePort }}
+    {{- end }}
     name: nginx-ssl
-  type: LoadBalancer
+  type: {{ $svcType }}
   selector:
     {{- toYaml .Values.web.serviceSelectorLabels | nindent 4 }}
