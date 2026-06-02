@@ -1,0 +1,49 @@
+# Development (GKE) environment overlay for crAPI
+#
+# Layered on top of deploy/helm/values.yaml — pass BOTH, base first. Easiest via
+# the chart's deploy-helm.sh wrapper (run from deploy/helm):
+#   ./deploy-helm.sh dev install
+# equivalent raw command:
+#   helm upgrade --install crapi ./deploy/helm \
+#     --namespace crapi --create-namespace \
+#     -f ./deploy/helm/values.yaml \
+#     -f ./deploy/helm/values/dev.yaml
+#
+# crAPI runs on the upstream Docker Hub images unchanged (image tags come from
+# Chart.appVersion = "develop", not from values), so this overlay deliberately
+# stays close to the chart defaults. Its job is to be the reviewable,
+# version-controlled record of a dev deployment and the home for any future
+# dev-only divergence.
+
+# --- Upstream entrypoint ------------------------------------------------------
+# crAPI's web/API entrypoint is the crapi-web Service on port 80 (see
+# web.service below). A reverse proxy / gateway placed in front of crAPI should
+# target its in-cluster DNS name:
+#     http://crapi-web.crapi.svc.cluster.local:80
+# (crAPI's own internal "mypremiumdealership" gateway-service is a separate,
+#  app-internal component.)
+
+# --- Runtime settings ---------------------------------------------------------
+# Always re-pull on restart so a rollout picks up a freshly published image.
+imagePullPolicy: Always
+logLevel: INFO
+
+# crAPI's intentional vulnerabilities — left enabled to match the upstream demo
+# app. crAPI is vulnerable by design; deploy it only as a disposable test target
+# and never expose it directly to untrusted networks.
+enableLog4j: true
+enableShellInjection: true
+
+# Chatbot needs an OpenAI key to function; left empty here. Set via a later
+# override if you want the chatbot live.
+openAIApiKey: ""
+
+web:
+  service:
+    # crapi-web is a LoadBalancer by default (chart hardcodes the type). If you
+    # reach the UI via `kubectl port-forward` and front crAPI with an in-cluster
+    # proxy, this external LB is optional — note it (and the mailhog LB) is a
+    # billed cloud forwarding rule.
+    name: crapi-web
+    nodePort: 30080
+    sslNodePort: 30443
