@@ -108,10 +108,17 @@ helm install --namespace crapi crapi . --values values.yaml
 # With persistent volume paths
 helm install --namespace crapi crapi . --values values-pv.yaml
 
-# Minikube
-minikube tunnel --alsologtostderr
-echo "http://$(minikube ip):30080"  # crAPI URL
-echo "http://$(minikube ip):30025"  # Mailhog URL
+# Services default to ClusterIP (in-cluster only). crAPI is vulnerable by
+# design, so reach the UI via port-forward rather than a public endpoint:
+kubectl port-forward -n crapi svc/crapi-web 8888:80     # crAPI:   http://localhost:8888
+kubectl port-forward -n crapi svc/mailhog-web 8025:8025 # Mailhog: http://localhost:8025
+
+# To deliberately expose it (e.g. minikube), opt into NodePort/LoadBalancer:
+helm install --namespace crapi crapi . --values values.yaml \
+  --set web.service.type=NodePort --set mailhog.webService.type=NodePort
+minikube tunnel --alsologtostderr                       # only needed for type=LoadBalancer
+echo "http://$(minikube ip):30080"                      # crAPI URL  (NodePort)
+echo "http://$(minikube ip):30025"                      # Mailhog URL (NodePort)
 ```
 
 ## Key URLs (Local Docker)
