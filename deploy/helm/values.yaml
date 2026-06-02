@@ -29,6 +29,13 @@ web:
     name: crapi-web
     labels:
       app: crapi-web
+    # Service type. Defaults to ClusterIP so crAPI is NOT reachable from outside
+    # the cluster unless you deliberately opt in. crAPI is vulnerable by design,
+    # so prefer reaching the UI via `kubectl port-forward` or an Ingress you add
+    # on purpose. Set to LoadBalancer/NodePort only for a disposable target you
+    # are knowingly exposing. nodePort/sslNodePort below apply only when the type
+    # is NodePort or LoadBalancer (they are invalid on a ClusterIP service).
+    type: ClusterIP
     nodePort: 30080
     sslNodePort: 30443
   config:
@@ -201,6 +208,11 @@ mailhog:
     name: mailhog-web
     labels:
       app: mailhog
+    # See web.service.type. Defaults to ClusterIP — the Mailhog UI exposes every
+    # captured email (password-reset tokens, OTPs, etc.), so keep it in-cluster
+    # unless you are knowingly exposing a disposable target. nodePort applies
+    # only when the type is NodePort or LoadBalancer.
+    type: ClusterIP
     nodePort: 30025
   config:
     name: mailhog-configmap

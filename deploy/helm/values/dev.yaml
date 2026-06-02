@@ -40,10 +40,13 @@ openAIApiKey: ""
 
 web:
   service:
-    # crapi-web is a LoadBalancer by default (chart hardcodes the type). If you
-    # reach the UI via `kubectl port-forward` and front crAPI with an in-cluster
-    # proxy, this external LB is optional — note it (and the mailhog LB) is a
-    # billed cloud forwarding rule.
+    # Keep crAPI in-cluster only. crAPI is vulnerable by design, so we never want
+    # an external cloud LB / public IP standing in front of it: reach the UI via
+    # `kubectl port-forward`, or front it with an in-cluster proxy / an Ingress we
+    # add deliberately. Flip to LoadBalancer/NodePort only for a disposable target
+    # we are knowingly exposing. (Same applies to the mailhog UI, which defaults
+    # to ClusterIP in the base values.)
     name: crapi-web
+    type: ClusterIP
     nodePort: 30080
     sslNodePort: 30443
